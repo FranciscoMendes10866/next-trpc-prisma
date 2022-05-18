@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { trpc } from '@/utils/trpc'
 
 const Home: NextPage = () => {
-  const { data } = trpc.useQuery(['findMemes']);
+  const { data } = trpc.useQuery(['findTodos']);
 
   return (
     <div>

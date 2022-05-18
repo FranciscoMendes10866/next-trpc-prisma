@@ -4,29 +4,45 @@ import { prisma } from "@/utils/prisma";
 
 export const serverRouter = trpc
   .router()
-  .query("findMemes", {
+  .query("findTodos", {
     resolve: async () => {
-      return await prisma.meme.findMany();
+      return await prisma.todo.findMany();
     },
   })
-  .mutation("insertMeme", {
+  .mutation("insertTodo", {
     input: z.object({
-      link: z.string(),
+      text: z.string(),
+      isCompleted: z.boolean(),
     }),
     resolve: async ({ input }) => {
-      return await prisma.meme.create({
+      return await prisma.todo.create({
         data: { ...input },
       });
     },
   })
-  .mutation("deleteMeme", {
+  .mutation("updateTodo", {
+    input: z.object({
+      id: z.number(),
+      text: z.string(),
+      isCompleted: z.boolean(),
+    }),
+    resolve: async ({ input }) => {
+      const { id, ...rest } = input;
+
+      return await prisma.todo.update({
+        where: { id },
+        data: { ...rest },
+      });
+    },
+  })
+  .mutation("deleteTodo", {
     input: z.object({
       id: z.number(),
     }),
     resolve: async ({ input }) => {
       const { id } = input;
 
-      return await prisma.meme.delete({
+      return await prisma.todo.delete({
         where: { id },
       });
     },
