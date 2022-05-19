@@ -3,11 +3,34 @@ import Head from "next/head";
 import { trpc } from "@/utils/trpc";
 import { List, ThemeIcon, Card, TextInput, Button, Stack } from "@mantine/core";
 import { CircleCheck, CircleDashed } from "tabler-icons-react";
+import { useState } from "react";
+import { Todo } from "@prisma/client";
 
 const Home: NextPage = () => {
-  const { data } = trpc.useQuery(["findTodos"]);
+  const [text, setText] = useState<string>("");
+  const { data, refetch } = trpc.useQuery(["findTodos"]);
+  const { mutate: insert } = trpc.useMutation(["insertTodo"], {
+    onSuccess: () => refetch(),
+  });
+  const { mutate: update } = trpc.useMutation(["updateTodo"], {
+    onSuccess: () => refetch(),
+  });
+  const { mutate: remove } = trpc.useMutation(["deleteTodo"], {
+    onSuccess: () => refetch(),
+  });
 
-  console.log(data);
+  const submitTodo = () => {
+    insert({ text });
+    setText("");
+  };
+
+  const patchTodo = (todo: Todo) => {
+    update({ ...todo, isCompleted: !todo.isCompleted });
+  };
+
+  const deleteTodo = (id: number) => {
+    remove({ id });
+  };
 
   return (
     <div>
@@ -30,24 +53,40 @@ const Home: NextPage = () => {
                 </ThemeIcon>
               }
             >
-              <List.Item>Respond to emails</List.Item>
-              <List.Item>Review Pull Requests</List.Item>
-              <List.Item
-                icon={
-                  <ThemeIcon color="teal" size={26} radius="xl">
-                    <CircleCheck size={16} />
-                  </ThemeIcon>
-                }
-              >
-                Read the Feature Specification Docs
-              </List.Item>
+              {data?.map((todo, index) => (
+                <List.Item
+                  key={index}
+                  {...(todo.isCompleted
+                    ? {
+                        icon: (
+                          <ThemeIcon color="teal" size={26} radius="xl">
+                            <CircleCheck size={16} />
+                          </ThemeIcon>
+                        ),
+                      }
+                    : {})}
+                  {...(todo.isCompleted
+                    ? { onClick: () => deleteTodo(todo.id) }
+                    : { onClick: () => patchTodo(todo) })}
+                >
+                  {todo.text}
+                </List.Item>
+              ))}
             </List>
-            <TextInput placeholder="Task" required size="md" my={15} />
+            <TextInput
+              placeholder="Task"
+              required
+              size="md"
+              my={15}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
             <Button
               size="md"
               fullWidth
               variant="gradient"
               gradient={{ from: "teal", to: "blue", deg: 60 }}
+              onClick={submitTodo}
             >
               Add
             </Button>

@@ -12,11 +12,10 @@ export const serverRouter = trpc
   .mutation("insertTodo", {
     input: z.object({
       text: z.string(),
-      isCompleted: z.boolean(),
     }),
     resolve: async ({ input }) => {
       return await prisma.todo.create({
-        data: { ...input },
+        data: { text: input.text },
       });
     },
   })
