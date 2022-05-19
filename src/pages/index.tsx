@@ -1,9 +1,9 @@
+import { useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "@/utils/trpc";
 import { List, ThemeIcon, Card, TextInput, Button, Stack } from "@mantine/core";
 import { CircleCheck, CircleDashed } from "tabler-icons-react";
-import { useState } from "react";
 import { Todo } from "@prisma/client";
 
 const Home: NextPage = () => {
@@ -20,8 +20,10 @@ const Home: NextPage = () => {
   });
 
   const submitTodo = () => {
-    insert({ text });
-    setText("");
+    if (text) {
+      insert({ text });
+      setText("");
+    }
   };
 
   const patchTodo = (todo: Todo) => {
